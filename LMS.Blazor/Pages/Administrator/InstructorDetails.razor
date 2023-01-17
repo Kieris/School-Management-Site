@@ -1,0 +1,188 @@
+@page "/instructorDetails/{Id}"
+@using LMS.Blazor.Data
+@inject InstructorApiService InstructorService;
+@inject CommonApiService CommonService;
+@using LMS.Blazor.Components
+@using System.Net
+
+<div class="h3 my-3">Instructor Details</div>
+@if(instructor != null)
+{
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Username</th>
+                <td>@instructor.Username</td>
+            </tr>
+            <tr>
+                <th>First Name</th>
+                <td>@instructor.FirstName</td>
+            </tr>
+            <tr>
+                <th>Last Name</th>
+                <td>@instructor.LastName</td>
+            </tr>
+            <tr>
+                <th>Specialty</th>
+                <td>@instructor.Specialty</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>@instructor.Phone</td>
+                @if(instructor.AltPhone != null)
+                {
+                    <th>Alt. Phone</th>
+                    <td>@instructor.AltPhone</td>
+                }
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>@instructor.Email</td>
+                @if(instructor.AltEmail != null)
+                {
+                    <th>Alt. Email</th>
+                    <td>@instructor.AltEmail</td>
+                }
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>@instructor.Address   @instructor.City, @instructor.State</td>
+            </tr>
+        </tbody>
+    </table>
+
+<div class="h4">Current Courses</div>
+<div class="my-3 d-flex justify-content-between align-items-center">
+    <div class="flex-grow-1 m-2">
+        <select class="form-control form-select" @bind="SelectedCourse">
+            <option value=""></option>
+            @if (courses != null)
+            {
+                @foreach (var course in courses)
+                {
+                    <option value=@course.Id>@course.Name</option>
+                }
+            }
+        </select>
+    </div>
+    <div>
+        <button class="btn btn-success p-2" @onclick="AddCourseForInstructor"><span class="oi oi-plus"></span></button>
+    </div>
+</div>
+@if (cresponse != null)
+{
+    @if (cresponse.StatusCode == HttpStatusCode.Conflict)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@cresponse.Content.ReadAsStringAsync().Result</div>
+    }
+    else if(cresponse.StatusCode == HttpStatusCode.OK) 
+    {
+        <div class="alert alert-success alert-dismissible fade show">Course added.</div>
+    }
+}
+<ul class="list-group">
+    @if (instructor.Courses.Count() > 0) 
+    {
+        @foreach(var course in instructor.Courses)
+        {
+            <li class="list-group-item">
+                <div class="h5">@course.Name</div>
+
+                <div class="ml-3 ms-3 text-muted">
+                    <div class="h6">Instructor(s)</div>
+                    <ul class="list-group">
+                        @if(course.Instructors.Count() > 0)
+                        {
+                            @foreach(var instructor in course.Instructors)
+                            {
+                                <li class="list-group-item">
+                                <div>@instructor.FirstName @instructor.LastName</div>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <div><em>None</em></div>
+                        }
+                    </ul>
+                </div>
+            </li>
+        }
+    }
+    else
+    {
+        <div><em>None</em></div>
+    }
+</ul>
+}
+
+<div class="d-flex justify-content-end my-3">
+    <button class="btn btn-danger" @onclick="ShowDeleteDialog">Delete</button>
+</div>
+
+@if (response != null)
+{
+    @if (response.StatusCode == HttpStatusCode.Conflict)
+    {
+        <div class="alert alert-danger">@response.Content.ReadAsStringAsync().Result</div>
+    }
+    else if(response.StatusCode == HttpStatusCode.OK) 
+    {
+        <div class="alert alert-success">@instructor.FirstName @instructor.LastName was deleted.</div>
+    }
+}
+<!--Modal-->
+<DeleteDialog @ref="DeleteDialog" CloseEventCallback="@Delete"></DeleteDialog>
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Instructor instructor;
+
+    private Course[] courses;
+
+    private string _selectedCourse = "";
+    private string SelectedCourse
+    {
+        get {
+            return _selectedCourse;
+        }
+        set {
+            _selectedCourse = value;
+        }
+    }
+
+    public DeleteDialog DeleteDialog = new DeleteDialog();
+
+    private HttpResponseMessage response;
+    private HttpResponseMessage cresponse;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        instructor = await InstructorService.GetInstructor(Id);
+        courses = await CommonService.GetCourses();
+    }
+
+    protected void ShowDeleteDialog()
+    {
+        DeleteDialog.Show();
+    }
+
+    private async Task Delete(bool confirmed)
+    {
+        if (confirmed) 
+        {
+            response = await InstructorService.DeleteInstructor(instructor.Id);
+            Console.WriteLine(response);
+        }
+    }
+
+    private async Task AddCourseForInstructor()
+    {
+        cresponse = await InstructorService.AddCourseForInstructor(instructor, SelectedCourse);
+        instructor = await InstructorService.GetInstructor(Id);
+    }
+}

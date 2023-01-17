@@ -1,0 +1,155 @@
+@page "/courseDetails/{Id}"
+@using LMS.Blazor.Data
+@inject CommonApiService CommonService;
+@inject InstructorApiService InstructorService;
+
+@using LMS.Blazor.Components
+@using System.Net
+
+<div class="h3 my-3">Course Details</div>
+@if(course != null)
+{
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Name</th>
+                <td>@course.Name</td>
+            </tr>
+            <tr>
+                <th>Preferred Year</th>
+                <td>@course.PrefYear</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>@course.Type</td>
+            </tr>
+            <tr>
+                <th>Length (minutes)</th>
+                <td>@course.Length</td>
+            </tr>
+            <tr>
+                <th>Day(s)</th>
+                <td>@course.Days</td>
+            </tr>
+            <tr>
+                <th>Semester(s)</th>
+                <td>@course.Semesters</td>
+            </tr>
+        </tbody>
+    </table>
+
+<div class="h4">Current Instructors</div>
+<div class="my-3 d-flex justify-content-between align-items-center">
+    <div class="flex-grow-1 m-2">
+        <select class="form-control form-select" @bind="SelectedInstructor">
+            <option value=""></option>
+            @if (instructors != null)
+            {
+                @foreach (var inst in instructors)
+                {
+                    <option value=@inst.Id>@inst.FirstName @inst.LastName</option>
+                }
+            }
+        </select>
+    </div>
+    <div>
+        <button class="btn btn-success p-2" @onclick="AddInstructorForCourse"><span class="oi oi-plus"></span></button>
+    </div>
+</div>
+@if (cresponse != null)
+{
+    @if (cresponse.StatusCode == HttpStatusCode.Conflict)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@cresponse.Content.ReadAsStringAsync().Result</div>
+    }
+    else if(cresponse.StatusCode == HttpStatusCode.OK) 
+    {
+        <div class="alert alert-success alert-dismissible fade show">Instructor added.</div>
+    }
+}
+<ul class="list-group">
+    @if (course.Instructors.Count() > 0) 
+    {
+        @foreach(var instructor in course.Instructors)
+        {
+            <li class="list-group-item">
+                <div class="h5">@instructor.FirstName @instructor.LastName</div>
+            </li>
+        }
+    }
+    else
+    {
+        <div><em>None</em></div>
+    }
+</ul>
+}
+
+<div class="d-flex justify-content-end my-3">
+    <button class="btn btn-danger" @onclick="ShowDeleteDialog">Delete</button>
+</div>
+
+@if (response != null)
+{
+    @if (response.StatusCode == HttpStatusCode.Conflict)
+    {
+        <div class="alert alert-danger">@response.Content.ReadAsStringAsync().Result</div>
+    }
+    else if(response.StatusCode == HttpStatusCode.OK) 
+    {
+        <div class="alert alert-success">@course.Name was deleted.</div>
+    }
+}
+<!--Modal-->
+<DeleteDialog @ref="DeleteDialog" CloseEventCallback="@Delete"></DeleteDialog>
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Course course;
+
+    private Instructor[] instructors;
+
+    private string _selectedInstructor = "";
+    private string SelectedInstructor
+    {
+        get {
+            return _selectedInstructor;
+        }
+        set {
+            _selectedInstructor = value;
+        }
+    }
+
+    public DeleteDialog DeleteDialog = new DeleteDialog();
+
+    private HttpResponseMessage response;
+    private HttpResponseMessage cresponse;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        course = await CommonService.GetCourse(Id);
+        instructors = await InstructorService.GetInstructors();
+    }
+
+    protected void ShowDeleteDialog()
+    {
+        DeleteDialog.Show();
+    }
+
+    private async Task Delete(bool confirmed)
+    {
+        if (confirmed) 
+        {
+            response = await CommonService.DeleteCourse(course.Id);
+        }
+    }
+
+    private async Task AddInstructorForCourse()
+    {
+        cresponse = await CommonService.AddInstructorForCourse(course, SelectedInstructor);
+        course = await CommonService.GetCourse(Id);
+    }
+}

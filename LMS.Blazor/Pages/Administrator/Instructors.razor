@@ -1,0 +1,68 @@
+@page "/instructors"
+@using LMS.Blazor.Data
+@using LMS.Blazor.Components
+@inject InstructorApiService InstructorService;
+@inject NavigationManager NavigationManager
+
+<div class="d-flex justify-content-between">
+    <div class="h2">Instructors</div>
+    <div>
+        <button class="btn btn-success p-2" @onclick="ShowAddDialog"><span class="oi oi-plus" aria-hidden="true"></span></button>
+    </div>
+</div>
+<!--Modal-->
+<AddInstructor @ref="AddDialog" CloseEventCallback="@InstructorAdded"></AddInstructor>
+
+@if (instructors != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stud in instructors)
+            {
+                <tr @onclick=@(() => InstructorClick(stud.Id))>
+                    <td>
+                        @stud.FirstName
+                    </td>
+                    <td>
+                        @stud.LastName
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Instructor[] instructors;
+ 
+     public AddInstructor AddDialog = new AddInstructor();
+
+
+    protected void ShowAddDialog()
+    {
+        AddDialog.Show();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        instructors = await InstructorService.GetInstructors();
+    }
+
+    protected async Task InstructorAdded(bool added)
+    {
+        if (added)
+        {
+            instructors = await InstructorService.GetInstructors();            
+        }
+    }
+
+    private void InstructorClick(Guid id)
+    {
+        NavigationManager.NavigateTo($"instructorDetails/{id}", false);
+    }
+}

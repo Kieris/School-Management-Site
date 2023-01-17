@@ -1,0 +1,3 @@
+is_global = true
+build_property.RootNamespace = LMS.Database.Migrations
+build_property.ProjectDir = /Users/joshuagarren/Desktop/CSharpProjects/LMS/LMS.Database.Migrations/

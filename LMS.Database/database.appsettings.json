@@ -1,0 +1,7 @@
+{
+    "ConnectionStrings": {
+        "Test-Sqlite": "",
+        "Test-MariaDB": ""
+    },
+    "MigrationsAssemblyName": ""
+}

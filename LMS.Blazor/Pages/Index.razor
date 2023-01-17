@@ -1,0 +1,46 @@
+@page "/"
+@using LMS.Blazor.Components
+
+<!--Inject Service-->
+@inject NavigationManager NavigationManager
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<PieChart></PieChart>
+
+<LineChart></LineChart>
+
+
+
+<button class="btn btn-danger" @onclick="@(() => RouteClick(5))">Multiple Page Route</button>
+
+<button class="btn btn-danger" @onclick="ShowDeleteDialog">Delete</button>
+<!--Modal-->
+<DeleteDialog @ref="DeleteDialog" CloseEventCallback="@Delete"></DeleteDialog>
+
+
+@code {
+    public DeleteDialog DeleteDialog = new DeleteDialog();
+
+
+    protected void ShowDeleteDialog()
+    {
+        DeleteDialog.Show();
+    }
+
+    private void Delete(bool confirmed)
+    {
+        if (confirmed) 
+        {
+            Console.WriteLine("Deleted");
+            NavigationManager.NavigateTo("counter", false);
+        }
+    }
+
+    private void RouteClick(int count)
+    {
+        NavigationManager.NavigateTo($"counter/{count}", false);
+    }
+}

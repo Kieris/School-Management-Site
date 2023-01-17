@@ -1,0 +1,70 @@
+@using LMS.Blazor.Data
+@inject StudentApiService StudentService;
+@using System.Net
+
+@if (ShowDialog)
+{
+<div class="modal fade show d-block overflow-auto" id="delModal" tabIndex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titleLabel">Add New Student</h5>
+                <button type="button" class="close" @onclick="@Close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm class="mt-3" Model="@student" OnValidSubmit="@HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <label for="username" class="form-label mt-2">User Name</label>
+                    <InputText class="form-control" id="username" @bind-Value="student.Username" />
+                    <label for="firstname" class="form-label mt-2">First Name</label>
+                    <InputText class="form-control" id="firstname" @bind-Value="student.FirstName" />
+                    <label for="lastname" class="form-label mt-2">Last Name</label>
+                    <InputText class="form-control" id="lastname" @bind-Value="student.LastName" />
+
+                    <label for="p1" class="form-label mt-2">Phone</label>
+                    <InputText class="form-control" id="p1" @bind-Value="student.Phone" />
+
+                    <label for="p2" class="form-label mt-2">Alternate Phone</label>
+                    <InputText class="form-control" id="p2" @bind-Value="student.AltPhone" />
+
+                    <label for="e1" class="form-label mt-2">Email</label>
+                    <InputText class="form-control" id="e1" @bind-Value="student.Email" />
+
+                    <label for="e2" class="form-label mt-2">Alternate Email</label>
+                    <InputText class="form-control" id="e2" @bind-Value="student.AltEmail" />
+                    <label for="address" class="form-label mt-2">Address</label>
+                    <InputText class="form-control" id="address" @bind-Value="student.Address" />
+                    <div class="row">
+                        <div class="col">
+                            <label for="city" class="form-label mt-2">City</label>
+                            <InputText class="form-control" id="city" @bind-Value="student.City" />
+                        </div>
+                        <div class="col">
+                            <label for="state" class="form-label mt-2">State</label>
+                            <InputText class="form-control" id="state" @bind-Value="student.State" />
+                        </div>
+                    </div>
+                    <button class="my-3 btn btn-primary" type="submit">Submit</button>
+
+                </EditForm>
+                    @if (response != null)
+                    {
+                        @if (response.StatusCode == HttpStatusCode.Conflict)
+                        {
+                            <div class="alert alert-danger">@response.Content.ReadAsStringAsync().Result</div>
+                        }
+                        else if(response.StatusCode == HttpStatusCode.Created) 
+                        {
+                            <div class="alert alert-success">@student.FirstName @student.LastName was created.</div>
+                        }
+                    }
+            </div>
+
+        </div>
+
+    </div>    
+</div>
+}
