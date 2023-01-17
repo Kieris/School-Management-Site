@@ -1,7 +1,7 @@
 {
     "ConnectionStrings": {
-        "Test-Sqlite": "Data Source=localdatabase.db",
-        "Test-MariaDB": "server=localhost;user=root;password=1234;database=ef"
+        "Test-Sqlite": "",
+        "Test-MariaDB": ""
     },
-    "MigrationsAssemblyName": "LMS.Database"
+    "MigrationsAssemblyName": ""
 }
